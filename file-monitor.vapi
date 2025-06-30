@@ -12,6 +12,9 @@ namespace INotify {
         [CCode (cname = "file_monitor_add_paths")]
         public int add_paths ([CCode (array_length_pos = 1.1)] string[] paths);
 
+        [CCode (cname = "file_monitor_add_paths_recursive")]
+        public int add_paths_recursive ([CCode (array_length_pos = 1.1)] string[] paths);
+
         [CCode (cname = "file_monitor_remove_paths")]
         public int remove_paths ([CCode (array_length_pos = 1.1)] string[] paths);
     }

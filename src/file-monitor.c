@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +48,7 @@ static monitored_file_t* find_monitored_file(directory_watch_t* dir_watch, const
 static void add_monitored_file(directory_watch_t* dir_watch, const char* filename, const char* full_path);
 static void remove_monitored_file(directory_watch_t* dir_watch, const char* filename);
 static void cleanup_directory_watch(file_monitor* monitor, directory_watch_t* dir_watch);
+static int add_directory_recursive(file_monitor* monitor, const char* dir_path);
 
 file_monitor* file_monitor_new(file_change_callback callback) {
     if (!callback) {
@@ -314,6 +316,41 @@ static void cleanup_directory_watch(file_monitor* monitor, directory_watch_t* di
     free(dir_watch);
 }
 
+static int add_directory_recursive(file_monitor* monitor, const char* dir_path) {
+    directory_watch_t* existing = find_directory_watch(monitor, dir_path);
+    if (!existing) {
+        directory_watch_t* dir_watch = add_directory_watch(monitor, dir_path);
+        if (!dir_watch) {
+            return -1;
+        }
+    }
+
+    DIR* dir = opendir(dir_path);
+    if (!dir) {
+        return -1;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        char full_path[PATH_MAX];
+        snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, entry->d_name);
+
+        struct stat st;
+        if (stat(full_path, &st) == 0 && S_ISDIR(st.st_mode)) {
+            add_directory_recursive(monitor, full_path);
+        }
+    }
+
+    closedir(dir);
+    return 0;
+}
+
+
+
 int file_monitor_add_paths(file_monitor* monitor, const char** paths, int path_count) {
     if (!monitor || !paths || path_count <= 0) {
         return -1;
@@ -339,6 +376,30 @@ int file_monitor_add_paths(file_monitor* monitor, const char** paths, int path_c
     pthread_mutex_unlock(&monitor->lock);
     return 0;
 }
+
+int file_monitor_add_paths_recursive(file_monitor* monitor, const char** paths, int path_count) {
+    if (!monitor || !paths || path_count <= 0) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&monitor->lock);
+
+    for (int i = 0; i < path_count; i++) {
+        const char* dir_path = paths[i];
+
+        struct stat st;
+        if (stat(dir_path, &st) != 0 || !S_ISDIR(st.st_mode)) {
+            continue;
+        }
+
+        add_directory_recursive(monitor, dir_path);
+    }
+
+    pthread_mutex_unlock(&monitor->lock);
+    return 0;
+}
+
+
 
 int file_monitor_remove_paths(file_monitor* monitor, const char** paths, int path_count) {
     if (!monitor || !paths || path_count <= 0) {

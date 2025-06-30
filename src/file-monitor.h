@@ -11,5 +11,6 @@ void file_monitor_destroy(file_monitor* monitor);
 
 int file_monitor_add_paths(file_monitor* monitor, const char** paths, int path_count);
 int file_monitor_remove_paths(file_monitor* monitor, const char** paths, int path_count);
+int file_monitor_add_paths_recursive(file_monitor* monitor, const char** paths, int path_count);
 
 #endif /* FILE_MONITOR_H */
