@@ -19,7 +19,7 @@ namespace INotify {
         public int remove_paths ([CCode (array_length_pos = 1.1)] string[] paths);
     }
 
-    [CCode (cprefix = "IN_", has_type_id = false)]
+    [CCode (cheader_filename = "sys/inotify.h", cprefix = "IN_", has_type_id = false)]
     [Flags]
     public enum EventType {
         ACCESS,
