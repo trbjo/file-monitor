@@ -377,6 +377,11 @@ int file_monitor_add_paths(file_monitor* monitor, const char** paths, int path_c
     return 0;
 }
 
+int file_monitor_add_path(file_monitor* monitor, const char* path) {
+    const char** paths = &path;
+    return file_monitor_add_paths(monitor, paths, 1);
+}
+
 int file_monitor_add_paths_recursive(file_monitor* monitor, const char** paths, int path_count) {
     if (!monitor || !paths || path_count <= 0) {
         return -1;
@@ -434,3 +439,9 @@ int file_monitor_remove_paths(file_monitor* monitor, const char** paths, int pat
     pthread_mutex_unlock(&monitor->lock);
     return 0;
 }
+
+int file_monitor_remove_path(file_monitor* monitor, const char* path) {
+    const char** paths = &path;
+    return file_monitor_remove_paths(monitor, paths, 1);
+}
+

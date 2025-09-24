@@ -12,11 +12,17 @@ namespace INotify {
         [CCode (cname = "file_monitor_add_paths")]
         public int add_paths ([CCode (array_length_pos = 1.1)] string[] paths);
 
+        [CCode (cname = "file_monitor_add_path")]
+        public int add_path (string path);
+
         [CCode (cname = "file_monitor_add_paths_recursive")]
         public int add_paths_recursive ([CCode (array_length_pos = 1.1)] string[] paths);
 
         [CCode (cname = "file_monitor_remove_paths")]
         public int remove_paths ([CCode (array_length_pos = 1.1)] string[] paths);
+
+        [CCode (cname = "file_monitor_remove_path")]
+        public int remove_path (string path);
     }
 
     [CCode (cheader_filename = "sys/inotify.h", cprefix = "IN_", has_type_id = false)]
